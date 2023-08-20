@@ -1,8 +1,12 @@
 "use client";
 import React, { useEffect, useState } from 'react'
 
+const session_token='0222503c-1e70-4e21-88a0-067d3a407edf'
+const MAPBOX_RETRIVE_URL='https://api.mapbox.com/search/searchbox/v1/retrieve/'
+
 function AutoCompleteAddress() {
   const [source,setSource]=useState<any>()
+  const [sourceChange,setSourceChange]=useState<any>(false)
   const [addressList,setAddressList]=useState<any>([]);
       useEffect(()=>{
         const delayDebounceFn=  setTimeout(()=>{
@@ -19,8 +23,20 @@ function AutoCompleteAddress() {
         });
 
         const result=await res.json();
-        setAddressList(result)
+        setAddressList(result)        
         
+    }
+
+    const onSourceAddressClick = async(item:any)=>{
+        setSource(item.full_address);
+        setAddressList([]);
+        setSourceChange(false);
+         const res=await fetch(MAPBOX_RETRIVE_URL+item.mapbox_id
+            +"?session_token="+session_token
+            +"&access_token="+process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN)
+        
+        const result=await res.json();
+        console.log(result);
     }
   return (
     <div className='mt-5' >
@@ -37,8 +53,7 @@ function AutoCompleteAddress() {
             absolute w-full bg-white z-20'>
             {addressList?.suggestions.map((item:any,index:number)=>(
                 <h2 key={index} className='p-3 hover:bg-gray-100 cursor-pointer'
-                onClick={()=>{setSource(item.full_address);
-                setAddressList([])}}
+                onClick={()=>{onSourceAddressClick(item)}}
                 >{item.full_address}</h2>
             ))}
            </div>:null}
